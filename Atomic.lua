@@ -1,7 +1,73 @@
--- ATOMIC ALL-IN-ONE SCRIPT - COMPLETE VERSION
--- This script combines: Silent Aim, Triggerbot, Aim Assist, Speed, Infinite Range, Rapid Fire, ESP, Anti Curve, Ping Prediction
+-- NAMECALL BYPASS - ADD THIS AT THE VERY TOP
+local oldCheck = checkcaller
+checkcaller = function() return true end
 
--- LPH compatibility
+-- Hook Mouse.Hit
+local mouseMeta = getrawmetatable(Mouse)
+local oldMouseIndex = mouseMeta.__index
+mouseMeta.__index = newcclosure(function(self, key)
+    if not oldCheck() and key == "Hit" and shared.Config and shared.Config.SilentAim and shared.Config.SilentAim.Enabled then
+        return CFrame.new(shared.Config.SilentAim.AimPosition or Vector3.new(0,0,0))
+    end
+    if not oldCheck() and key == "Target" and shared.Config and shared.Config.SilentAim and shared.Config.SilentAim.Enabled then
+        return shared.Config.SilentAim.AimPart
+    end
+    return oldMouseIndex(self, key)
+end)
+
+-- Hook RemoteEvents
+local function hookRemote(remote)
+    if remote and remote:IsA("RemoteEvent") then
+        local oldFire = remote.FireServer
+        remote.FireServer = newcclosure(function(self, ...)
+            if not oldCheck() and shared.Config and shared.Config.SilentAim and shared.Config.SilentAim.Enabled then
+                local args = {...}
+                for i, v in pairs(args) do
+                    if typeof(v) == "Vector3" then
+                        args[i] = shared.Config.SilentAim.AimPosition or v
+                    elseif typeof(v) == "CFrame" then
+                        args[i] = CFrame.new(shared.Config.SilentAim.AimPosition or Vector3.new(0,0,0))
+                    end
+                end
+                return oldFire(self, unpack(args))
+            end
+            return oldFire(self, ...)
+        end)
+    end
+end
+
+for _, child in pairs(game:GetService("ReplicatedStorage"):GetChildren()) do 
+    pcall(hookRemote, child) 
+end
+
+-- Hook Raycast
+local oldRaycast = Workspace.Raycast
+Workspace.Raycast = newcclosure(function(origin, direction, params)
+    if not oldCheck() and shared.Config and shared.Config.SilentAim and shared.Config.SilentAim.Enabled then
+        if shared.Config.SilentAim.AimPosition then
+            direction = (shared.Config.SilentAim.AimPosition - origin).Unit * 10000
+        end
+    end
+    return oldRaycast(origin, direction, params)
+end)
+
+-- Hook math.random
+local oldRandom = math.random
+math.random = newcclosure(function(...)
+    if not oldCheck() then
+        local args = {...}
+        if #args == 2 and args[1] == -0.05 and args[2] == 0.05 then
+            if shared.Config and shared.Config.Spread and shared.Config.Spread.Enabled then
+                return oldRandom(args[1], args[2]) * (shared.Config.Spread.Amount / 100)
+            end
+        end
+    end
+    return oldRandom(...)
+end)
+
+print("Namecall bypass active!")
+
+-- lph
 local LPH_NO_VIRTUALIZE = function(f) return f end
 if not getfenv().LPH_NO_VIRTUALIZE then
     getfenv().LPH_NO_VIRTUALIZE = function(f) return f end
