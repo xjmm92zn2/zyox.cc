@@ -67,7 +67,7 @@ end)
 
 print("Namecall bypass active!")
 
--- lph
+-- LPH compatibility
 local LPH_NO_VIRTUALIZE = function(f) return f end
 if not getfenv().LPH_NO_VIRTUALIZE then
     getfenv().LPH_NO_VIRTUALIZE = function(f) return f end
@@ -102,7 +102,7 @@ local VirtualInputManager = game:GetService('VirtualInputManager')
 local HttpService = game:GetService('HttpService')
 
 -- Configuration Table
-local Config = {
+shared.Config = {
     Settings = {
         AlwaysOn = true,
         UseKeybinds = true,
@@ -1050,7 +1050,7 @@ local function ApplyInfiniteRange()
         if rangeValue and rangeValue:IsA('NumberValue') then
             rangeValue.Value = Config.InfiniteRange.MaxRange
         end
-        local config = tool:FindFirstChild('Configuration') or tool:FindFirstChild('GunConfig') or tool:FindFirstChild('WeaponConfig')
+        shared.Config = tool:FindFirstChild('Configuration') or tool:FindFirstChild('GunConfig') or tool:FindFirstChild('WeaponConfig')
         if config then
             local r = config:FindFirstChild(propName)
             if r and r:IsA('NumberValue') then
@@ -1923,26 +1923,6 @@ game:GetService("RunService").Heartbeat:Connect(function()
     end
 end)
 
--- Print startup message
-print("========================================")
-print("       ATOMIC SCRIPT LOADED")
-print("   Silent Aim | Triggerbot | Aim Assist")
-print("   Speed | Infinite Range | Rapid Fire")
-print("   ESP | Anti Curve | Ping Prediction")
-print("========================================")
-print("PC Keybinds:")
-if Config.Settings.Platform == 'PC' then
-    print("K - Silent Aim Toggle")
-    print("L - Triggerbot Toggle")
-    print("X - Aim Assist Toggle")
-    print("T - Speed Toggle")
-    print("I - Infinite Range Toggle")
-    print("R - Rapid Fire Toggle")
-    print("P - ESP Toggle")
-    print("F - Target Line Toggle")
-    print("G - Tracer Toggle")
-end
-if Config.Settings.Platform == 'Mobile' and Config.Settings.AlwaysOn then
-    print("Always On Mode Activated - All features enabled")
-end
-print("========================================")
+-- prints of my dih
+getgenv().Config = shared.Config
+print("Atomic Loaded Successfully with Namecall Bypass!")
